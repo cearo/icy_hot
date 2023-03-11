@@ -2,34 +2,25 @@
 use std::fmt;
 
 // #TODO
-// Implement equality (==) for TemperatureScales, TemperatureSymbols, and Temperatures
-// Redesign Temperature:
-//-- All new Temperatures start Celsius with Degrees symbol
-//--- Impl Default? New? Both?
-//-- Implement fn to_scale(TemperatureScale) -> Temperature
-//--- Decide if to_scale or convert_to is better
-
-// Math
-const FAHRENHEIT_WATER_FREEZE_TEMP: f64 = 32.0;
-const FAHRENHEIT_TO_CELSIUS_RATIO: f64 = 5.0 / 9.0;
-const CELSIUS_TO_FAHRENHEIT_RATIO: f64 = 9.0 / 5.0;
+// Implement Temperature::parse(File) -> Vec<Temperature>
 
 fn main() {
-    // Will loop for user input and handle invalid input cases
-    // Want to be able to suggest if they are using an unsupported TemperatureScale or TemperatureSymbol
     let temp_f = Temperature {value: 0, scale: TemperatureScales::Celsius, symbol: TemperatureSymbols::Degrees};
     // Want to add an overload: convert_to(TemperatureScale, TemperatureSymbol)
-    let new_temp = temp_f.convert_to(TemperatureScales::Celsius);
     print!("{:#?}", &temp_f);
+    let new_temp = temp_f.convert_to(TemperatureScales::Fahrenheit);
+    let compare_temp = Temperature { value: 32, scale: TemperatureScales::Fahrenheit, symbol: TemperatureSymbols::Degrees};
+    let eq_test = new_temp == compare_temp;
     println!("{:#?}", &new_temp);
-    println!("{}", &new_temp);
+    println!("{}", new_temp);
+    println!("{}", eq_test);
 }
 
 // Data type to represent temperature scales
 // Scales
 const FAHRENHEIT_SCALE_SYMBOL: char = 'F';
 const CELSIUS_SCALE_SYMBOL: char = 'C';
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 enum TemperatureScales {
     Fahrenheit,
     Celsius,
@@ -38,8 +29,6 @@ enum TemperatureScales {
         match self {
             Self::Fahrenheit => FAHRENHEIT_SCALE_SYMBOL,
             Self::Celsius => CELSIUS_SCALE_SYMBOL,
-            TemperatureScales::Fahrenheit => todo!(),
-            TemperatureScales::Celsius => todo!(),
         }
     }
 }
@@ -50,7 +39,7 @@ const DEGREE_SYMBOL: char = '\u{00B0}';
 const DEGREE_ASTERISK_SYMBOL: char = '*';
 const DEGREE_SPACE_SYMBOL: char = ' ';
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 enum TemperatureSymbols {
     Degrees,
     Asterisk,
@@ -65,55 +54,89 @@ enum TemperatureSymbols {
     }
 }
 
-#[derive(Debug, Clone)]
+// Math
+const FAHRENHEIT_WATER_FREEZE_TEMP: f64 = 32.0;
+const CELSIUS_TO_FAHRENHEIT_RATIO: f64 = 9.0 / 5.0;
+const FAHRENHEIT_TO_CELSIUS_RATIO: f64 = 5.0 / 9.0;
+
+#[derive(Debug, Clone, PartialEq, Eq)]
 // Data type to represent temperatures
 // Implement builder pattern: Temperature.value(55).asterisk().to_celsius()
-// Eventually Temperature.add(Temperature(55).to_celsius(), Temperature(100).to_fehrenheit()).to_celcius()
-// Implement Clone trait so in convert_to(self,...) when converting to same type, a self.clone() can be returned.
-// ^^ So no reference necessary ^^
+// Eventually Temperature.add(Temperature(55).to_celsius(), Temperature(100).to_fahrenheit()).to_celsius()
 struct Temperature {
     value: i32,
     scale: TemperatureScales,
     symbol: TemperatureSymbols
-} impl Temperature {
-    // So ugly. I need to find a way to check if self.scale is to_scale but I can't find a way to do that in the match statement.
+}
+ impl Temperature {
+    
     // I want the logic to be:
     // If -for some dumb reason- you're asking to convert Temperature to the same TemperatureScale it already is: return self
     // else, do F -> C or C -> F conversions.
-    fn convert_to(&self, to_scale: TemperatureScales) -> Temperature { // without Clone &Temperature is needed
-        // The TemperatureScale we are going to
+    pub fn convert_to(self, to_scale: TemperatureScales) -> Temperature {
+        if self.scale == to_scale {
+            return self;
+        }
+
         match to_scale {
-            TemperatureScales::Fahrenheit => {
-                // The TemperatureScale we are coming from
-                match self.scale {
-                    // The TemperatureScale we are going to is the same as self
-                    TemperatureScales::Fahrenheit => self.clone(),
-                    TemperatureScales::Celsius => Temperature { 
-                        value: (f64::from(self.value) * CELSIUS_TO_FAHRENHEIT_RATIO + FAHRENHEIT_WATER_FREEZE_TEMP) as i32, 
-                        scale: to_scale, 
-                        symbol: self.symbol.clone() 
-                    }
-                }
-            }
-            TemperatureScales::Celsius => {
-                // The reverse of all of that ^^^
-                match self.scale {
-                    TemperatureScales::Fahrenheit => Temperature { 
-                        value: ((f64::from(self.value) - FAHRENHEIT_WATER_FREEZE_TEMP) * FAHRENHEIT_TO_CELSIUS_RATIO) as i32, 
-                        scale: to_scale, 
-                        symbol: self.symbol.clone(), 
-                    },
-                    // The TemperatureScale we are going to is the same as self
-                    TemperatureScales::Celsius => self.clone(),
-                }
+            TemperatureScales::Fahrenheit => self.to_fahrenheit(),
+            TemperatureScales::Celsius => self.to_celsius(),
+        }
+        // The TemperatureScale we are going to
+        // match to_scale {
+        //     TemperatureScales::Fahrenheit => {
+        //         // The TemperatureScale we are coming from
+        //         match self.scale {
+        //             // The TemperatureScale we are going to is the same as self
+        //             TemperatureScales::Fahrenheit => self.clone(),
+        //             TemperatureScales::Celsius => Temperature { 
+        //                 value: (f64::from(self.value) * CELSIUS_TO_FAHRENHEIT_RATIO + FAHRENHEIT_WATER_FREEZE_TEMP) as i32, 
+        //                 scale: to_scale, 
+        //                 symbol: self.symbol.clone() 
+        //             }
+        //         }
+        //     }
+        //     TemperatureScales::Celsius => {
+        //         // The reverse of all of that ^^^
+        //         match self.scale {
+        //             TemperatureScales::Fahrenheit => Temperature { 
+        //                 value: ((f64::from(self.value) - FAHRENHEIT_WATER_FREEZE_TEMP) * FAHRENHEIT_TO_CELSIUS_RATIO) as i32, 
+        //                 scale: to_scale, 
+        //                 symbol: self.symbol.clone(), 
+        //             },
+        //             // The TemperatureScale we are going to is the same as self
+        //             TemperatureScales::Celsius => self.clone(),
+        //         }
+        //     },
+        // }
+    }
+
+    pub fn to_fahrenheit(self) -> Temperature {
+        
+        const FAHRENHEIT_WATER_FREEZE_TEMP: f64 = 32.0;
+        match self.scale {
+            TemperatureScales::Fahrenheit => self,
+            TemperatureScales::Celsius => Temperature { 
+                value: (f64::from(self.value) * CELSIUS_TO_FAHRENHEIT_RATIO + FAHRENHEIT_WATER_FREEZE_TEMP) as i32, 
+                scale: self.scale, 
+                symbol: self.symbol 
             },
         }
     }
-    fn to_scale(&self, convert_to: TemperatureScales) -> Temperature {
-        match convert_to {
-            TemperatureScales::Fahrenheit => todo!(),
-            TemperatureScales::Celsius => self.clone(),
+
+    pub fn to_celsius(self) -> Temperature {
+        match self.scale {
+            TemperatureScales::Fahrenheit => Temperature { 
+                value: ((f64::from(self.value) - FAHRENHEIT_WATER_FREEZE_TEMP) * FAHRENHEIT_TO_CELSIUS_RATIO) as i32, 
+                scale: self.scale, 
+                symbol: self.symbol,
+            },
+            TemperatureScales::Celsius => self,
         }
+    }
+} impl Default for Temperature {
+    fn default() -> Self {
+        Self { value: 0, scale: TemperatureScales::Celsius, symbol: TemperatureSymbols::Degrees }
     }
 } impl fmt::Display for Temperature {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
