@@ -11,9 +11,11 @@ fn main() {
     let new_temp = temp_f.convert_to(TemperatureScales::Fahrenheit);
     let compare_temp = Temperature { value: 32, scale: TemperatureScales::Fahrenheit, symbol: TemperatureSymbols::Degrees};
     let eq_test = new_temp == compare_temp;
-    println!("{:#?}", &new_temp);
-    println!("{}", new_temp);
-    println!("{}", eq_test);
+    let clone_test = new_temp.clone();
+    println!("New Temp Debug: {:#?}", &new_temp);
+    println!("New Temp Display: {}", new_temp);
+    println!("Clone Test: {:#?}", clone_test);
+    println!("Equality Test: {}", eq_test);
 }
 
 // Scales
@@ -103,6 +105,13 @@ struct Temperature {
                 symbol: self.symbol,
             },
             TemperatureScales::Celsius => self,
+        }
+    }
+
+    pub fn clone_to(&self, to_scale: TemperatureScales) -> Temperature {
+        match to_scale {
+            TemperatureScales::Fahrenheit => self.clone().to_fahrenheit(),
+            TemperatureScales::Celsius => self.clone().to_celsius(),
         }
     }
 } impl Default for Temperature {
