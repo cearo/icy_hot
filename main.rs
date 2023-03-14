@@ -7,8 +7,8 @@ use std::fmt;
 fn main() {
     let temp_f = Temperature {value: 0, scale: TemperatureScales::Celsius, symbol: TemperatureSymbols::Degrees};
     // Want to add an overload: convert_to(TemperatureScale, TemperatureSymbol)
-    let new_temp = temp_f.convert_to(TemperatureScales::Fahrenheit);
     print!("{:#?}", &temp_f);
+    let new_temp = temp_f.convert_to(TemperatureScales::Fahrenheit);
     let compare_temp = Temperature { value: 32, scale: TemperatureScales::Fahrenheit, symbol: TemperatureSymbols::Degrees};
     let eq_test = new_temp == compare_temp;
     let clone_test = new_temp.clone();
@@ -62,10 +62,10 @@ const FAHRENHEIT_WATER_FREEZE_TEMP: f64 = 32.0;
 const CELSIUS_TO_FAHRENHEIT_RATIO: f64 = 9.0 / 5.0;
 const FAHRENHEIT_TO_CELSIUS_RATIO: f64 = 5.0 / 9.0;
 
+#[derive(Debug, Clone, PartialEq, Eq)]
 // Data type to represent temperatures
 // Implement builder pattern: Temperature.value(55).asterisk().to_celsius()
 // Eventually Temperature.add(Temperature(55).to_celsius(), Temperature(100).to_fahrenheit()).to_celsius()
-#[derive(Debug, Clone, PartialEq, Eq)]
 struct Temperature {
     value: i32,
     scale: TemperatureScales,
@@ -85,6 +85,8 @@ struct Temperature {
     }
 
     pub fn to_fahrenheit(self) -> Temperature {
+        
+        const FAHRENHEIT_WATER_FREEZE_TEMP: f64 = 32.0;
         match self.scale {
             TemperatureScales::Fahrenheit => self,
             TemperatureScales::Celsius => Temperature { 
@@ -107,10 +109,6 @@ struct Temperature {
     }
 
     pub fn clone_to(&self, to_scale: TemperatureScales) -> Temperature {
-        if self.scale == to_scale {
-            return self.clone();
-        }
-        
         match to_scale {
             TemperatureScales::Fahrenheit => self.clone().to_fahrenheit(),
             TemperatureScales::Celsius => self.clone().to_celsius(),
