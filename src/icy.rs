@@ -1,4 +1,5 @@
 pub mod temperatures {
+    use crate::temperature_symbols::TemperatureSymbols;
 
     // TODO
     // Implement From Trait (and the like) to the TemperatureScale rather than Temperature having to_{scale}()
@@ -15,7 +16,7 @@ pub mod temperatures {
         Celsius,
     }
     impl TemperatureScales {
-        fn value(&self) -> char {
+        pub fn value(&self) -> char {
             match self {
                 Self::Fahrenheit => FAHRENHEIT_SCALE_SYMBOL,
                 Self::Celsius => CELSIUS_SCALE_SYMBOL,
@@ -29,21 +30,21 @@ pub mod temperatures {
     const DEGREE_SPACE_SYMBOL: char = ' ';
 
     // Data type to represent temperature unit symbols
-    #[derive(Debug, Clone, PartialEq, Eq)]
-    pub enum TemperatureSymbols {
-        Degrees,
-        Asterisk,
-        Space,
-    }
-    impl TemperatureSymbols {
-        fn value(&self) -> char {
-            match self {
-                TemperatureSymbols::Degrees => DEGREE_SYMBOL,
-                TemperatureSymbols::Asterisk => DEGREE_ASTERISK_SYMBOL,
-                TemperatureSymbols::Space => DEGREE_SPACE_SYMBOL,
-            }
-        }
-    }
+    // #[derive(Debug, Clone, PartialEq, Eq)]
+    // enum TemperatureSymbols {
+    //     Degrees,
+    //     Asterisk,
+    //     Space,
+    // }
+    // impl TemperatureSymbols {
+    //     fn value(&self) -> char {
+    //         match self {
+    //             TemperatureSymbols::Degrees => DEGREE_SYMBOL,
+    //             TemperatureSymbols::Asterisk => DEGREE_ASTERISK_SYMBOL,
+    //             TemperatureSymbols::Space => DEGREE_SPACE_SYMBOL,
+    //         }
+    //     }
+    // }
 
     // Math
     const FAHRENHEIT_WATER_FREEZE_TEMP: f64 = 32.0;
@@ -111,19 +112,20 @@ pub mod temperatures {
             Self {
                 value: 0,
                 scale: TemperatureScales::Celsius,
-                symbol: TemperatureSymbols::Degrees,
+                symbol: TemperatureSymbols::DegreesChar,
             }
         }
     }
-    impl std::fmt::Display for Temperature {
-        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-            write!(
-                f,
-                "{}{}{}",
-                self.value,
-                self.symbol.value(),
-                self.scale.value()
-            )
-        }
-    }
+    // impl std::fmt::Display for Temperature {
+    //     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    //         let symbol = TemperatureSymbols::from('°');
+    //         write!(
+    //             f,
+    //             "{}{}{}",
+    //             self.value,
+    //             symbol,
+    //             self.scale.value()
+    //         )
+    //     }
+    //}
 }
