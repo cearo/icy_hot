@@ -1,50 +1,61 @@
 
-use std::{convert::From, fmt::Display};
+use std::{convert::From,convert::TryFrom, fmt::Display};
 
-trait ReturnValue<'a, T> {
-    fn value(&self) -> T;
-}
+//Leaving this stuff for now as we would ideally like to build an extensible interface
+// trait ReturnValue<'a, T> {
+//     fn value(&self) -> T;
+// }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
-struct TemperatureSymbol<T> where T: Display {
-    symbol: T
-} impl<'a, T> ReturnValue<'a, T> for TemperatureSymbol<T> where T: Display {
-    fn value(&self) -> T {
-        return self.symbol;
-    }
-} impl<T> Display for TemperatureSymbol<T> where T: Display {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.symbol)
-    }
-} impl<T> From<T> for TemperatureSymbol<T> where T: Display {
-    fn from(value: T) -> Self {
-        TemperatureSymbol { symbol: value }
-    }
-}
+// #[derive(Debug, Clone, PartialEq, Eq)]
+// struct TemperatureSymbol<T> where T: Display {
+//     symbol: T
+// } impl<'a, T> ReturnValue<'a, T> for TemperatureSymbol<T> where T: Display {
+//     fn value(&self) -> T {
+//         return self.symbol;
+//     }
+// } impl<T> Display for TemperatureSymbol<T> where T: Display {
+//     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+//         write!(f, "{}", self.symbol)
+//     }
+// } impl<T> From<T> for TemperatureSymbol<T> where T: Display {
+//     fn from(value: T) -> Self {
+//         TemperatureSymbol { symbol: value }
+//     }
+// }
+
+const DEGREES_CHAR: &str = "°";
+const DEGREES_STR: &str = "degrees";
+const ASTERISK: &str = "*";
+const SPACE: &str = " ";
+const KELVIN: &str = "kelvin";
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum TemperatureSymbols {
-    Kelvin(TemperatureSymbol<&'static str>),
-    DegreesChar(TemperatureSymbol<&'static str>),
-    DegreesStr(TemperatureSymbol<&'static str>),
-    Asterisk(TemperatureSymbol<&'static str>),
-    Space(TemperatureSymbol<&'static str>),
-    CustomChar(TemperatureSymbol<&'static str>),
-    CustomString(TemperatureSymbol<&'static str>),
-} impl TemperatureSymbols {
-    const DEGREES_CHAR: &str = "°";
-    const DEGREES_STR: &str = "degrees";
-    const ASTERISK: &str = "*";
-    const SPACE: &str = " ";
-    const KELVIN: &str = "kelvin";
+    Kelvin(String),
+    DegreesChar(String),
+    DegreesStr(String),
+    Asterisk(String),
+    Space(String),
+    CustomChar(String),
+    CustomString(String),
 } impl From<char> for TemperatureSymbols {
     fn from(value: char) -> Self {
-        let value: &str = value.to_string().as_str();
+        match value.to_string().as_str() {
+            val @ DEGREES_CHAR => Self::DegreesChar(val.to_string()),
+            val @ ASTERISK => Self::Asterisk(val.to_string()),
+            val @ SPACE => Self::Space(val.to_string()),
+            val => Self::CustomChar(val.to_string()),
+        }
+    }
+} impl TryFrom<TemperatureSymbols> for char {
+    type Error = ();
+    fn try_from(value: TemperatureSymbols) -> Result<char,Self::Error> {
         match value {
-            val @ Self::DEGREES_CHAR => Self::DegreesChar(TemperatureSymbol{symbol: val}),
-            val @ Self::ASTERISK => Self::Asterisk(TemperatureSymbol{symbol: val}),
-            val @ Self::SPACE => Self::Space(TemperatureSymbol { symbol: val }),
-            val => Self::CustomChar(TemperatureSymbol{symbol: val}),
+            TemperatureSymbols::DegreesChar(c) => Ok(c.chars().next().unwrap()),
+            TemperatureSymbols::Asterisk(c) => Ok(c.chars().next().unwrap()),
+            TemperatureSymbols::Space(c) => Ok(c.chars().next().unwrap()),
+            TemperatureSymbols::CustomChar(c) => Ok(c.chars().next().unwrap()),
+            _ => Err(())
         }
     }
 } impl From<&str> for TemperatureSymbols {
@@ -57,10 +68,26 @@ pub enum TemperatureSymbols {
         }
             
         match value {
-            val @Self::DEGREES_STR => Self::DegreesStr(TemperatureSymbol { symbol: val }),
-            val @Self::KELVIN => Self::Kelvin(TemperatureSymbol { symbol: val }),
-            val => Self::CustomString(TemperatureSymbol{ symbol: val }),
+            val @ DEGREES_STR => Self::DegreesStr(val.to_string()),
+            val @ KELVIN => Self::Kelvin(val.to_string()),
+            val => Self::CustomString(val.to_string()),
         }
+    }
+} impl From<TemperatureSymbols> for String {
+    fn from(value: TemperatureSymbols) -> Self {
+        match value {
+            TemperatureSymbols::Kelvin(val) => val,
+            TemperatureSymbols::DegreesChar(val) => val,
+            TemperatureSymbols::DegreesStr(val) => val,
+            TemperatureSymbols::Asterisk(val) => val,
+            TemperatureSymbols::Space(val) => val,
+            TemperatureSymbols::CustomChar(val) => val,
+            TemperatureSymbols::CustomString(val) => val,
+        }
+    }
+} impl Display for TemperatureSymbols {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", String::from(self.to_owned()))
     }
 }
 
@@ -72,6 +99,34 @@ mod tests {
     fn success_convert_str_to_temperature_symbol() {
         let degrees_char: &str = "°";
 
-        assert_eq!(TemperatureSymbol{symbol: "°"}, TemperatureSymbol::from(degrees_char))
+        assert_eq!(TemperatureSymbols::DegreesChar("°".to_owned()), TemperatureSymbols::from(degrees_char))
+    }
+
+    #[test]
+    fn success_convert_temperature_symbol_to_str() {
+        let degrees_char: &str = "°";
+
+        assert_eq!(degrees_char.to_owned(), String::from(TemperatureSymbols::DegreesChar(degrees_char.to_owned())))
+    }
+
+    #[test]
+    fn success_convert_char_to_temperature_symbol() {
+        let degrees_char: char = '°';
+
+        assert_eq!(TemperatureSymbols::DegreesChar(degrees_char.into()), TemperatureSymbols::from(degrees_char))
+    }
+
+    #[test]
+    fn success_convert_temperature_symbol_to_char() {
+        let degrees_enum = TemperatureSymbols::DegreesChar("°".to_owned());
+
+        assert_eq!('°', char::try_from(degrees_enum).unwrap());
+    }
+
+    #[test]
+    fn error_convert_temperature_symbol_to_char() {
+        let degrees_string_enum = TemperatureSymbols::DegreesStr("degrees".to_owned());
+
+        assert_eq!(Result::Err(()), char::try_from(degrees_string_enum));
     }
 }

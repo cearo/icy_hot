@@ -112,7 +112,7 @@ pub mod temperatures {
             Self {
                 value: 0,
                 scale: TemperatureScales::Celsius,
-                symbol: TemperatureSymbols::DegreesChar,
+                symbol: TemperatureSymbols::DegreesChar("°".to_owned()),
             }
         }
     }
