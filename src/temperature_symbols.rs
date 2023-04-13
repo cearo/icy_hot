@@ -89,6 +89,19 @@ pub enum TemperatureSymbols {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", String::from(self.to_owned()))
     }
+} impl PartialEq<&str> for TemperatureSymbols{
+    fn eq(&self, other: &&str) -> bool {
+        match self {
+            TemperatureSymbols::Kelvin(val) => **val == **other,
+            TemperatureSymbols::DegreesChar(val) => **val == **other,
+            TemperatureSymbols::DegreesStr(val) => **val == **other,
+            TemperatureSymbols::Asterisk(val) => **val == **other,
+            TemperatureSymbols::Space(val) => **val == **other,
+            TemperatureSymbols::CustomChar(val) => **val == **other,
+            TemperatureSymbols::CustomString(val) => **val == **other,
+        }
+    }
+
 }
 
 #[cfg(test)]
@@ -128,5 +141,14 @@ mod tests {
         let degrees_string_enum = TemperatureSymbols::DegreesStr("degrees".to_owned());
 
         assert_eq!(Result::Err(()), char::try_from(degrees_string_enum));
+    }
+    
+    #[test]
+    fn success_tempature_symbol_equals_str(){
+        let degrees_char: &str = "°";
+        let degrees_string_enum = TemperatureSymbols::DegreesStr(degrees_char.to_owned());
+        
+        assert!(degrees_string_enum == degrees_char);
+        
     }
 }
