@@ -23,10 +23,13 @@ pub mod temperatures {
             }
         }
     }
-
+    
     // Char symbols
+    #[allow(dead_code)]
     const DEGREE_SYMBOL: char = '\u{00B0}';
+    #[allow(dead_code)]
     const DEGREE_ASTERISK_SYMBOL: char = '*';
+    #[allow(dead_code)]
     const DEGREE_SPACE_SYMBOL: char = ' ';
 
     // Data type to represent temperature unit symbols

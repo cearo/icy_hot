@@ -1,7 +1,7 @@
 pub mod icy;
 pub mod temperature_symbols;
-use crate::icy::temperatures::*;
-use crate::temperature_symbols::TemperatureSymbols;
+// use crate::icy::temperatures::*;
+// use crate::temperature_symbols::TemperatureSymbols;
 
 // #TODO
 // Implement Temperature::parse(File) -> Vec<Temperature>

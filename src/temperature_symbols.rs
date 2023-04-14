@@ -66,7 +66,6 @@ pub enum TemperatureSymbols {
             .next()
             .expect("I'm not sure how there's no char here... hepl"))
         }
-            
         match value {
             val @ DEGREES_STR => Self::DegreesStr(val.to_string()),
             val @ KELVIN => Self::Kelvin(val.to_string()),
@@ -89,7 +88,7 @@ pub enum TemperatureSymbols {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", String::from(self.to_owned()))
     }
-} impl PartialEq<&str> for TemperatureSymbols{
+} impl PartialEq<&str> for TemperatureSymbols {
     fn eq(&self, other: &&str) -> bool {
         match self {
             TemperatureSymbols::Kelvin(val) => **val == **other,
@@ -101,7 +100,18 @@ pub enum TemperatureSymbols {
             TemperatureSymbols::CustomString(val) => **val == **other,
         }
     }
-
+} impl PartialEq<TemperatureSymbols> for &str {
+    fn eq(&self, other: &TemperatureSymbols) -> bool {
+        match other {
+            TemperatureSymbols::Kelvin(val) => **val == **self,
+            TemperatureSymbols::DegreesChar(val) => **val == **self,
+            TemperatureSymbols::DegreesStr(val) => **val == **self,
+            TemperatureSymbols::Asterisk(val) => **val == **self,
+            TemperatureSymbols::Space(val) => **val == **self,
+            TemperatureSymbols::CustomChar(val) => **val == **self,
+            TemperatureSymbols::CustomString(val) => **val == **self,
+        }
+    }
 }
 
 #[cfg(test)]
@@ -144,11 +154,34 @@ mod tests {
     }
     
     #[test]
-    fn success_tempature_symbol_equals_str(){
+    fn success_temperature_symbol_left_equals_str() {
         let degrees_char: &str = "°";
         let degrees_string_enum = TemperatureSymbols::DegreesStr(degrees_char.to_owned());
         
         assert!(degrees_string_enum == degrees_char);
+    }
+
+    #[test]
+    fn success_temperature_symbol_left_not_equals_str() {
+        let degrees_char: &str = "°";
+        let degrees_string_enum = TemperatureSymbols::Asterisk("*".to_owned());
         
+        assert!(degrees_string_enum != degrees_char);
+    }
+
+    #[test]
+    fn success_temperature_symbol_left_equals_emoji() {
+        let smiley_face_emoji: &str = "😊";
+        let smiley_temperature_symbol = TemperatureSymbols::CustomChar(smiley_face_emoji.to_owned());
+
+        assert!(smiley_temperature_symbol == smiley_face_emoji);
+    }
+
+    #[test]
+    fn success_temperature_symbol_right_equals_emoji() {
+        let smiley_face_emoji: &str = "😊";
+        let smiley_temperature_symbol = TemperatureSymbols::CustomChar(smiley_face_emoji.to_owned());
+
+        assert!(smiley_face_emoji == smiley_temperature_symbol);
     }
 }
